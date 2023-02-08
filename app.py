@@ -7,7 +7,7 @@ import pandas_ta as ta
 import plotly.graph_objects as go
 import plotly.express as px
 
-st.set_page_config(page_title='Market Breath', page_icon=':chart_with_upwards_trend:', layout='wide', initial_sidebar_state='expanded')
+st.set_page_config(page_title='Market Monitor', page_icon=':chart_with_upwards_trend:', layout='wide', initial_sidebar_state='expanded')
 ###------Theme
 
 

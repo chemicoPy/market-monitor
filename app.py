@@ -62,10 +62,12 @@ lowerBound = round(last_close - (last_close * maxChange/100),2)
 
 st.header(f'{instrument} - {Tframe} Metrics')
 
-col1, col2, col3 = st.columns(3)
-col1.metric("Current Value Now", last_close, delta= round(last_close - last_close2,2), delta_color = "normal")
-col2.metric("Upper Bound Value", higherBound, delta= round(higherBound - last_close,2), delta_color = "normal")
-col3.metric("Lower Bound Value", lowerBound, delta=  round(lowerBound - last_close,2) , delta_color = "normal")
+placeholder = st.empty()
+with placeholder.container():
+    col1, col2, col3 = st.columns(3)
+    col1.metric("Current Value Now", last_close, delta= round(last_close - last_close2,2), delta_color = "normal")
+    col2.metric("Upper Bound Value", higherBound, delta= round(higherBound - last_close,2), delta_color = "normal")
+    col3.metric("Lower Bound Value", lowerBound, delta=  round(lowerBound - last_close,2) , delta_color = "normal")
 
 
 

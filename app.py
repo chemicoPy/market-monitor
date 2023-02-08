@@ -17,7 +17,7 @@ st.set_page_config(page_title='Market Monitor', page_icon=':chart_with_upwards_t
 
 
 
-st.title("Market Breath - Market Distribution and Change")
+st.title("Market Monitor - Market Distribution, Change & Price Converter")
 st.sidebar.image("https://lh6.googleusercontent.com/28Z-ruLPUFRdtMzGIOIgb0atJPNJgTtvhanzgho7cZDPrDQfyKHhL05yJXDGOd_Z9co=w2400", use_column_width=True)
 # Create dropdown menus for instrument and Tframe
 instrument = st.sidebar.selectbox("Select Instrument", ['BTC/USDT','BNB/USDT', 'ETH/USDT', "SOL/USDT", "DOT/USDT", "FIL/USDT"])

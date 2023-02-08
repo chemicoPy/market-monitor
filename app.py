@@ -1,19 +1,40 @@
 import streamlit as st
-import ccxt,pytz,time,requests
+import time
+import requests
 import pandas as pd
 import numpy as np
+import re
+import string
+import os
+import json
+import streamlit.components.v1 as components
+from io import BytesIO
+from time import sleep
+import math
+
+from numpy import *
+import json
+from pandas import DataFrame, Series
+from numpy.random import randn
+import io
+from pandas.io.json import json_normalize
+import matplotlib.pyplot as plt
+from matplotlib.pyplot import figure
+from streamlit_extras.app_logo import add_logo
+import ccxt,pytz,time,schedule, requests
 from datetime import datetime, timedelta, date
 import pandas_ta as ta
 import plotly.graph_objects as go
 import plotly.express as px
+from pprint import pprint
+import statsmodels.regression.linear_model as rg
 
-st.set_page_config(page_title='Market Breath', page_icon=':chart_with_upwards_trend:', layout='wide', initial_sidebar_state='expanded')
-###------Theme
 
+# Desiging & implementing changes to the standard streamlit UI/UX
+st.set_page_config(page_icon="img/page_icon.png", layout='wide', initial_sidebar_state='expanded')    #Logo
 
-st.title("Market Breath - Market Distribution and Change")
-st.sidebar.image("https://lh6.googleusercontent.com/28Z-ruLPUFRdtMzGIOIgb0atJPNJgTtvhanzgho7cZDPrDQfyKHhL05yJXDGOd_Z9co=w2400", use_column_width=True)
-
+st.title('Crypto Converter to Local Currency')
+st.subheader("Navigate to side bar to see full project info as well as options to choose from, to get started!")
 
 from forex_python.converter import CurrencyRates
 from forex_python.converter import CurrencyCodes
@@ -25,115 +46,55 @@ YOUR_APP_ID = st.secrets["api_key"]
 
 c = CurrencyRates()
     
- 
-# Create dropdown menus for instrument and Tframe
-instrument = st.sidebar.selectbox("Select Instrument", ['BTC/USDT','BNB/USDT', 'ETH/USDT', "SOL/USDT", "DOT/USDT", "FIL/USDT",
-             "DOGE/USDT", "BNB/USDT", "USD/USDT", "XRP/USDT", "TRX/USDT", "XAU/USDT", "LTC/USDT", "SHIB/USDT", "MATIC/USDT"])
-Tframe = st.sidebar.selectbox(
-        'Interval', ["Interval of interest", "1m","5m","15m","30m","1h","2h","4h","1d","1w","month"], index=0)
-percent_range = st.sidebar.slider("Percent of Closing Value", 0, 100, 95)
+def add_logo():
+    st.markdown(
+        """
+        <style>
+            [data-testid="stSidebarNav"] {
+                background-image: url(https://github.com/chemicoPy/crypto-conv-dashboard/blob/main/img/page_icon.png);
+                background-repeat: no-repeat;
+                padding-top: 120px;
+                background-position: 20px 20px;
+            }
+            [data-testid="stSidebarNav"]::before {
+                content: "My Company Name";
+                margin-left: 20px;
+                margin-top: 20px;
+                font-size: 30px;
+                position: relative;
+                top: 100px;
+            }
+        </style>
+        """,
+        unsafe_allow_html=True,
+    )
 
-lim = 1000
-bybit = ccxt.bybit()
+add_logo()
 
-# get kline data
-klines = bybit.fetch_ohlcv(instrument, timeframe=Tframe, limit= lim, since=None)
+  
+    # ------ layout setting---------------------------
+st.sidebar.markdown(
+            """
+    ## Project Overview
+    Crypto Converter is an app that converts crypto coin price to a local currency price. You can check price on a visualization board as well when you select the option and hit on the button.
+    
+    Get started already!""")    
 
-# filter klines to only include data from the past month
-from datetime import datetime, timedelta
-one_month_ago = datetime.now() - timedelta(days=1500)
-filtered_klines = [kline for kline in klines if datetime.fromtimestamp(kline[0]/1000) >= one_month_ago]
+  
+st.sidebar.markdown("## Select Crypto pair & Interval below") # add a title to the sidebar container
 
-# convert the klines list to a DataFrame
-df = pd.DataFrame(filtered_klines, columns=['timestamp', 'open', 'high', 'low', 'close', 'volume'])
-
-# convert the timestamp column to a datetime type
-df['timestamp'] = pd.to_datetime(df['timestamp'], unit='ms')
-
-# set the timestamp column as the index
-df.set_index('timestamp', inplace=True)
-df["closePercentChange"] = abs(df["close"].pct_change()*100)
-df = df.drop(columns=["volume", "high", "low"])
-df = df.drop(df.index[0])
-
-
-
-maxChange = df["closePercentChange"].quantile(percent_range/100)
-maxChange = round(maxChange, 2)
-
-last_close = df["close"].iloc[-1]
-last_close2 = df["close"].iloc[-2]
-highest_close = df["close"].max()
-lowest_close = df["close"].min()
-higherBound = round(last_close + (last_close * maxChange/100),2)
-lowerBound = round(last_close - (last_close * maxChange/100),2)
- 
-
-
-st.header(f'{instrument} - {Tframe} Metrics')
-
-placeholder = st.empty()
-with placeholder.container():
-    col1, col2, col3 = st.columns(3)
-    col1.metric("Current Value Now", last_close, delta= round(last_close - last_close2,2), delta_color = "normal")
-    col2.metric("Upper Bound Value", higherBound, delta= round(higherBound - last_close,2), delta_color = "normal")
-    col3.metric("Lower Bound Value", lowerBound, delta=  round(lowerBound - last_close,2) , delta_color = "normal")
-
-
-
-fig = go.Figure()
-fig.add_trace(go.Scatter(y=df['closePercentChange'], mode='markers'))
-fig.update_layout(
-    shapes=[
-        # Line Horizontal
-        go.layout.Shape(
-            type="line",
-            x0=0,
-            y0=maxChange,
-            x1=999,
-            y1=maxChange,
-            line=dict(
-                color="red",
-                width=3,
-                dash="dot"
-            )
-        )
-    ],
-    title= f'{percent_range}% of the last {len(df)} candles closed within {maxChange}% range of previous closing price',
-    yaxis_title="Value",
-    xaxis_visible=False
-)
-st.plotly_chart(fig,use_container_width=True)
-
-fig = px.histogram(df, x="closePercentChange", nbins=50)
-st.plotly_chart(fig, use_container_width=True)
-
-instrument = instrument.replace("/", "")
-timeframe = Tframe
-if "m" in timeframe:
-  timeframe = timeframe.replace("m", "")
-elif "h" in timeframe:
-  timeframe = timeframe.replace("h", "")
-  timeframe = int(timeframe) * 60
-elif "d" in timeframe:
-  timeframe = timeframe.replace("d", "")
-  timeframe = int(timeframe) * (60*24)
-
-
-
-chart_url = f'https://s.tradingview.com/widgetembed/?frameElementId=tradingview_8e87c&symbol=BINANCE%3A{instrument}&interval={timeframe}&hidesidetoolbar=1&saveimage=0&toolbarbg=f1f3f6&studies=&theme=Dark&style=1&timezone=Etc%2FUTC&studies_overrides=%7B%7D&overrides=%7B%7D&enabled_features=%5B%5D&disabled_features=%5B%5D&locale=en&referral_id=6310'
-
-# display the trading chart in an iframe
-st.components.v1.iframe(chart_url, width=800, height=600)
-
-st.sidebar.markdown("## Conversion") # add a title to the sidebar container
+instrument = st.sidebar.selectbox(
+            "Convert From",
+            ("BTC/USDT","ETH/USDT",
+             "DOGE/USDT", "BNB/USDT", "USD/USDT", "XRP/USDT", "SOL/USDT", "TRX/USDT", "XAU/USDT", "LTC/USDT", "SHIB/USDT", "MATIC/USDT"),)
 
 to_conv = st.sidebar.selectbox(
             "Convert To",
             ("GBP (British Pound Sterling)", 
              "EUR (Euro)", "NZD (New Zealand Dollar)", "USD (United States Dollar)", "NPR (Nepalese Rupee)", "JPY (Japanese Yen)","BGN (Bulgarian Lev)","CZK (Czech Republic Koruna)","DKK (Danish Krone)","HUF (Hungarian Forint)","PLN (Polish Zloty)","RON (Romanian Leu)","SEK (Swedish Krona)", 
                                                   "CHF (Swiss Franc)","ISK (Icelandic Króna)","NOK (Norwegian Krone)","TRY (Turkish Lira)","AUD (Australian Dollar)","BRL (Brazilian Real)","CAD (Canadian Dollar)","CNY (Chinese Yuan)","HKD (Hong Kong Dollar)","IDR (Indonesian Rupiah)","ILS (Israeli New Sheqel)", "INR (Indian Rupee)","KRW (South Korean Won)","MXN (Mexican Peso)","MYR (Malaysian Ringgit)","PHP (Philippine Peso)","SGD (Singapore Dollar)", "THB (Thai Baht)", "ZAR (South African Rand)", "NGN (Nigerian Naira)"),)   
-
+Tframe = st.sidebar.selectbox(
+        'Interval', ["Interval of interest", "1m","5m","15m","30m","1h","2h","4h","1d","1w","month"], index=0)
 
 
 #Conversion
@@ -301,7 +262,6 @@ converted_price = float(price) * (conv_factor_1) * (conv_factor_2)
 
 if st.sidebar.button("Convert"):
   st.sidebar.write("Converted Price = ", converted_price)
-  
   
 
 st.sidebar.markdown(

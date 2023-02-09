@@ -137,6 +137,8 @@ to_conv = st.sidebar.selectbox(
 
 #Conversion
 
+instrument = instrument[:instrument.index("USDT")] + '/' + instrument[instrument.index("USDT"):]
+
 from pylivecoinwatch import LiveCoinWatchAPI
 
 instrument_conv = instrument[:instrument.index("/")]

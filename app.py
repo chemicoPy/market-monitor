@@ -22,8 +22,7 @@ import matplotlib.pyplot as plt
 from matplotlib.pyplot import figure
  
 
-st.set_page_config(page_title='Market Monitor', page_icon=':chart_with_upwards_trend:', layout='wide', initial_sidebar_state='expanded')
-
+st.set_page_config(page_title='Market Monitor', page_icon="img/page_icon.png", layout='wide', initial_sidebar_state='expanded')
 
 st.title("Market Monitor - Market Distribution, Change & Price Converter")
 st.sidebar.image("https://lh6.googleusercontent.com/28Z-ruLPUFRdtMzGIOIgb0atJPNJgTtvhanzgho7cZDPrDQfyKHhL05yJXDGOd_Z9co=w2400", use_column_width=True)

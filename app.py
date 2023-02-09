@@ -20,13 +20,21 @@ from numpy.random import randn
 from pandas.io.json import json_normalize
 import matplotlib.pyplot as plt
 from matplotlib.pyplot import figure
-
+ 
 
 st.set_page_config(page_title='Market Monitor', page_icon=':chart_with_upwards_trend:', layout='wide', initial_sidebar_state='expanded')
 
 
 st.title("Market Monitor - Market Distribution, Change & Price Converter")
 st.sidebar.image("https://lh6.googleusercontent.com/28Z-ruLPUFRdtMzGIOIgb0atJPNJgTtvhanzgho7cZDPrDQfyKHhL05yJXDGOd_Z9co=w2400", use_column_width=True)
+
+st.sidebar.markdown(
+            """
+    ## Project Overview
+    With Market Monitor, you can see and switch between trends in real-time forex market, get insights from these trends.
+    Also, it can convert crypto coin price to a local currency price.
+    
+    Get started already!""")  
 
 # Dropdown menus for instrument and Tframe
 instrument = st.sidebar.selectbox("Select Instrument", ['BTC/USDT','BNB/USDT', 'ETH/USDT', "SOL/USDT", "DOT/USDT", "FIL/USDT",

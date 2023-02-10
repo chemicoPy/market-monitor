@@ -322,7 +322,7 @@ st.sidebar.markdown(
     -----------
     # Other App(s):
  
-    1. [Weather App](https://weather-dash.streamlit.app/)
+    1. [Weather App](https://weather-monitor.streamlit.app/)
     2. [Crypto Converter](https://crypto-conv.streamlit.app/)
     
     """)
